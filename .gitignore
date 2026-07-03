@@ -1,0 +1,10 @@
+.settings/
+build/
+bin/
+target/
+
+*.class
+*.log
+
+.DS_Store
+Thumbs.db
