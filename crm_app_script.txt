@@ -1,0 +1,187 @@
+CREATE DATABASE CRMAPP
+USE CRMAPP
+
+
+ALTER TABLE user ADD COLUMN first_name varchar(255);
+ALTER TABLE user ADD COLUMN last_name varchar(255);
+
+
+SELECT u.id, u.first_name, u.last_name, u.email, r.name 
+FROM user u
+JOIN role r on u.role_id = r.id;
+
+SELECT * FROM role
+
+select t.name, t.start_date, t.end_date, t.status_id
+from tasks t 
+where t.user_id = 3
+
+select u.fullname, u.email
+from user u 
+where u.id = 3
+
+select u.fullname, t.name, t.start_date, t.end_date, t.status_id 
+from tasks t join user u on t.user_id = u.id
+
+select t.name, u.fullname, j.name as jobName , t.start_date, t.end_date, t.status_id 
+from jobs j join tasks t on j.id = job_id join user u on t.user_id = u.id
+
+
+select t.name, u.fullname, t.status_id 
+from tasks t join user u on t.user_id = u.id
+where t.job_id = 2
+
+select t.id, t.name, j.name, t.end_date, t.start_date, t.status_id
+from tasks t join jobs j on t.job_id = j.id
+where t.user_id = 3
+
+create table role(
+	id int not null AUTO_INCREMENT PRIMARY KEY,
+	name varchar(50) not null,
+	desciption varchar(100)
+)
+
+
+create table user(
+	id int not null AUTO_INCREMENT PRIMARY KEY,
+	email varchar(50) not null,
+	PASSWORD varchar(100) not null,
+	fullname varchar(100) not null, 
+	avatar varchar(200),
+	role_id int not null
+)
+
+
+-- gan FK cho users va roles
+
+alter table user add constraint fk_user_role FOREIGN KEY (role_id) REFERENCES role(id)  
+
+
+create table status(
+	id int not null AUTO_INCREMENT PRIMARY KEY,
+	name varchar(50) not null,
+	start_date date,
+	end_date date
+)
+
+create table jobs(
+	id int not null AUTO_INCREMENT PRIMARY KEY,
+	name varchar(50) not null,
+	start_date date,
+	end_date date
+)
+
+create table tasks(
+	id int not null AUTO_INCREMENT PRIMARY KEY,
+	name varchar(50) not null,
+	start_date date,
+	end_date date,
+	user_id int not null,
+	job_id int not null,
+	status_id int not null 
+)
+
+alter table tasks add constraint fk_tasks_user FOREIGN KEY (user_id) REFERENCES user(id)  
+alter table tasks add constraint fk_tasks_jobs FOREIGN KEY (job_id) REFERENCES jobs(id)  
+alter table tasks add constraint fk_tasks_status FOREIGN KEY (status_id) REFERENCES status(id)  
+
+
+-- insert du lieu 
+-- 4 user 3 job 6 task 3 role 3 status
+
+INSERT INTO role (name, desciption) VALUES 
+('ADMIN', 'Quản trị viên hệ thống'),
+('MANAGER', 'Quản lý dự án'),
+('USER', 'Nhân viên thực hiện');
+
+
+INSERT INTO user (email, PASSWORD, fullname, avatar, role_id) VALUES 
+('admin@gmail.com', '123456', 'Nguyễn Văn Admin', 'avatar1.jpg', 1),
+('manager@gmail.com', '123456', 'Trần Thị Quản Lý', 'avatar2.jpg', 2),
+('nv_an@gmail.com', '123456', 'Nguyễn Văn An', 'avatar3.jpg', 3),
+('le_binh@gmail.com', '123456', 'Lê Văn Bình', 'avatar4.jpg', 3);
+
+
+INSERT INTO status (name) VALUES 
+('Chưa thực hiện'),
+('Đang thực hiện'),
+('Hoàn thành');
+
+
+INSERT INTO jobs (name, start_date, end_date) VALUES 
+('Thiết kế giao diện CRM', '2024-01-01', '2024-02-01'),
+('Xây dựng Database', '2024-01-15', '2024-02-15'),
+('Viết tài liệu hướng dẫn', '2024-02-01', '2024-03-01');
+
+INSERT INTO tasks (name, start_date, end_date, user_id, job_id, status_id) VALUES 
+('Phác thảo Wireframe', '2024-01-01', '2024-01-05', 3, 1, 3), -- NV An làm Job 1, Xong
+('Thiết kế Mockup UI', '2024-01-06', '2024-01-20', 4, 1, 2),   -- Bình làm Job 1, Đang làm
+('Thiết kế sơ đồ ERD', '2024-01-15', '2024-01-20', 3, 2, 3),   -- NV An làm Job 2, Xong
+('Cài đặt SQL Server', '2024-01-21', '2024-01-25', 4, 2, 2),   -- Bình làm Job 2, Đang làm
+('Viết HDSD cho Admin', '2024-02-01', '2024-02-10', 3, 3, 1),  -- NV An làm Job 3, Chưa làm
+('Viết HDSD cho User', '2024-02-11', '2024-02-20', 4, 3, 1);   -- Bình làm Job 3, Chưa làm
+
+
+select * FROM  jobs
+
+
+-- viet query lay ra thong tin user kem theo ten nhom quyen
+select name t, fullname u FROM user u join tasks t on u.id = t.user_id
+-- viet query lay thong tin user kem nhom quyen
+select name r, fullname u FROM user u join role r on u.role_id = r.id
+
+-- ds job bat dau tu ngay 5/5/26
+select * from jobs
+where start_date >= '2026-05-05'
+
+
+-- lay ra task va user thuc hien task 
+select t.name , u.fullname  FROM user u join tasks t on u.id = t.user_id
+
+-- dem xem moi user co bao nhieu task
+select COUNT(t.id), u.fullname 
+FROM user u 
+join tasks t on u.id = t.user_id
+group by u.fullname
+
+
+-- dem moi status co bao nhieu task
+select COUNT(t.id), s.name
+FROM status s 
+join tasks t on s.id = t.status_id
+group by s.name
+
+
+-- lay ra task co ngay ket thuc gan nhat 
+select * from tasks 
+WHERE end_date >= CURDATE() 
+ORDER BY end_date ASC 
+LIMIT 1;
+
+-- lay ra user co nhieu task nhat
+
+select COUNT(t.id), u.fullname 
+FROM user u 
+join tasks t on u.id = t.user_id
+group by u.fullname
+order by COUNT(t.id)
+limit 1
+
+-- lay task theo status
+select t.name, s.name
+FROM status s 
+join tasks t on s.id = t.status_id
+
+
+lay toan bo thong tin cua task 
+select t.id, t.name, t.start_date, t.end_date, u.fullname, j.name as jobname, s.name as statusname
+FROM tasks t 
+join status s on s.id = t.status_id
+join user u on u.id = t.user_id
+join jobs j on j.id = t.job_id
+
+
+SELECT u.id, u.fullname, r.name FROM user u JOIN role r on r.id = u.role_id
+
+
+
